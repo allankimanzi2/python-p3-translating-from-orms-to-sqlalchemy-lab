@@ -1,33 +1,41 @@
-from models import Dog
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from models import Dog
 
-def create_table(base, engine): 
-    base.metadata.create_all(engine) 
-    
+engine = create_engine('sqlite:///:memory:')
+
+def create_table(base):
+    sql = """
+        CREATE TABLE IF NOT EXISTS dogs (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            breed TEXT
+        );
+    """
+
+    return engine
 
 def save(session, dog):
     session.add(dog)
     session.commit()
-    pass
+
+    return session
+
+def new_from_db(session, row):
+    return session.query(Dog).filter_by(id = row.id).first()
 
 def get_all(session):
-    return session.query(Dog).all()
-    pass
+    return session.query(Dog)
 
 def find_by_name(session, name):
-    return session.query(Dog).filter(Dog.name == name).first()
-    pass
+    return session.query(Dog).filter_by(name = name).first()
 
 def find_by_id(session, id):
-    return session.query(Dog).filter(Dog.id == id ).first()
-    pass
+    return session.query(Dog).filter_by(id = id).first()
 
 def find_by_name_and_breed(session, name, breed):
-    return session.query(Dog).filter(Dog.name == name, Dog.breed == breed).first()
-    pass
+    return session.query(Dog).filter_by(name = name, breed = breed).first()
 
 def update_breed(session, dog, breed):
-    for dog in session.query(Dog):
-         dog.breed =breed
-    pass
+    dog.breed = breed
+    session.commit()
+    return session
